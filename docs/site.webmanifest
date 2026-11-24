@@ -1,7 +1,7 @@
 {
   "name": "The LeetCode Rank",
   "short_name": "LeetCode Rank",
-  "description": "A live study of LeetCode global profile rank versus problems solved.",
+  "description": "A live study of LeetCode global profile rank versus problems solved, with optional contest ratings.",
   "start_url": "/LeetCodeRankStudy/",
   "scope": "/LeetCodeRankStudy/",
   "display": "standalone",
