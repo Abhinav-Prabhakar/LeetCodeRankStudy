@@ -1,0 +1,22 @@
+{
+  "name": "The LeetCode Rank",
+  "short_name": "LeetCode Rank",
+  "description": "A live study of LeetCode global profile rank versus problems solved.",
+  "start_url": "/LeetCodeRankStudy/",
+  "scope": "/LeetCodeRankStudy/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#ffffff",
+  "icons": [
+    {
+      "src": "favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "favicon-180.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    }
+  ]
+}
