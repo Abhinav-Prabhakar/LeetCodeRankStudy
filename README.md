@@ -1,115 +1,139 @@
-# LeetCode global profile rank vs. problems solved
+<p align="center">
+  <img src="assets/mark.svg" width="56" alt="The LeetCode Rank">
+</p>
 
-Live sample scraped **24 November 2026** from LeetCode's public GraphQL API.
+<h1 align="center">The LeetCode Rank</h1>
 
-- **243 real users** with profile rank between **1 and 1,983**
-- Solved counts between **2,131 and 4,123**
-- The full problem set at scrape time was **4,123** problems
+<p align="center">
+  <em>243 live profiles. Ranks 1–1,983.<br>The problem count it takes to stand among them.</em>
+</p>
+
+<p align="center">
+  <a href="https://abhinav-prabhakar.github.io/LeetCodeRankStudy/"><img src="https://img.shields.io/badge/LIVE_SITE-VISIT-7C1F2E?style=for-the-badge&labelColor=141311" alt="Live site"></a>
+  <img src="https://img.shields.io/badge/DATA-LIVE_GRAPHQL-141311?style=for-the-badge&labelColor=7C1F2E" alt="Live GraphQL data">
+  <img src="https://img.shields.io/badge/CHART-D3-141311?style=for-the-badge&labelColor=7C1F2E" alt="D3 chart">
+  <img src="https://img.shields.io/badge/LICENSE-MIT-141311?style=for-the-badge&labelColor=7C1F2E" alt="MIT license">
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/profiles-243-7C1F2E?style=flat-square&labelColor=141311" alt="243 profiles">
+  <img src="https://img.shields.io/badge/ranks-1%E2%80%931%2C983-7C1F2E?style=flat-square&labelColor=141311" alt="Ranks 1 to 1,983">
+  <img src="https://img.shields.io/badge/solved-2%2C131%E2%80%934%2C123-7C1F2E?style=flat-square&labelColor=141311" alt="Solved 2,131 to 4,123">
+  <img src="https://img.shields.io/badge/percentile-99.98th-7C1F2E?style=flat-square&labelColor=141311" alt="99.98th percentile">
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/python-3.x-141311?style=flat-square&labelColor=7C1F2E&logo=python&logoColor=white" alt="Python 3">
+  <img src="https://img.shields.io/badge/pages-live-141311?style=flat-square&labelColor=7C1F2E&logo=githubpages&logoColor=white" alt="GitHub Pages">
+  <img src="https://img.shields.io/github/last-commit/Abhinav-Prabhakar/LeetCodeRankStudy?style=flat-square&label=last%20commit&color=141311&labelColor=7C1F2E" alt="Last commit">
+  <img src="https://img.shields.io/github/stars/Abhinav-Prabhakar/LeetCodeRankStudy?style=flat-square&label=stars&color=141311&labelColor=7C1F2E" alt="GitHub stars">
+  <img src="https://img.shields.io/github/license/Abhinav-Prabhakar/LeetCodeRankStudy?style=flat-square&label=license&color=141311&labelColor=7C1F2E" alt="License">
+</p>
+
+<p align="center">
+  <a href="https://abhinav-prabhakar.github.io/LeetCodeRankStudy/">
+    <img src="assets/site-hero.png" alt="The LeetCode Rank — a live study of global profile rank and problems solved" width="100%">
+  </a>
+</p>
+
+<table align="center">
+  <tr>
+    <td align="center"><strong>243</strong><br><sub>profiles</sub></td>
+    <td align="center"><strong>1–1,983</strong><br><sub>global rank</sub></td>
+    <td align="center"><strong>2,131–4,123</strong><br><sub>problems solved</sub></td>
+    <td align="center"><strong>99.98<sup>th</sup></strong><br><sub>at the cut-off</sub></td>
+  </tr>
+</table>
+
+<br>
+
+## The climb
+
+<p align="center">
+  <img src="assets/site-chart.png" alt="Interactive scatter plot of global profile rank versus problems solved, with a hovered profile" width="100%">
+</p>
+
+At the very top, the problem set runs out before the ambition does: rank 1 has solved all **4,123** problems. From there the bands compress: the median of the top 500 sits at **3,403** solved, the next 500 at **2,723**, the next at **2,421**, and the last at **2,216**.
+
+By rank 2,000 the curve is almost flat. Between the 1,000th and 2,000th places, a thousand ranks separate users by about **500** problems — less a measure of effort than of time, attrition, and which problems LeetCode has added this month.
+
+<br>
+
+## The weighting
+
+Profile rank counts every solved problem once. An easy is worth exactly as much as a hard — **1 : 1 : 1** — and the mix barely moves with rank: **24.9% easy, 53.0% medium, 22.1% hard** across all 243 profiles. The median profile is **25 / 53 / 22**; the top 500 is 24 / 53 / 23, the bottom 500 25 / 53 / 22.
+
+<p align="center">
+  <img src="assets/site-mix.png" alt="Difficulty mix — 24.9% easy, 53.0% medium, 22.1% hard" width="100%">
+</p>
+
+<br>
+
+## The register
+
+<p align="center">
+  <img src="assets/site-register.png" alt="The searchable register of all 243 profiles" width="100%">
+</p>
+
+Every sampled profile, searchable by username, country or solved count. The gaps are real: they are users who never appear in the contest leaderboards used to enumerate candidates.
+
+<p align="center">
+  <a href="https://abhinav-prabhakar.github.io/LeetCodeRankStudy/"><img src="https://img.shields.io/badge/OPEN_THE_REGISTER-7C1F2E?style=for-the-badge&labelColor=141311" alt="Open the register"></a>
+  <a href="data.csv"><img src="https://img.shields.io/badge/DOWNLOAD-data.csv-141311?style=for-the-badge&logo=download&logoColor=white" alt="Download data.csv"></a>
+  <a href="summary-by-100.csv"><img src="https://img.shields.io/badge/DOWNLOAD-band_summary-141311?style=for-the-badge&logo=download&logoColor=white" alt="Download band summary"></a>
+</p>
+
+<br>
+
+## Method, in three lines
+
+**Scan.** Pages 1–180 of LeetCode’s `globalRanking` query — 4,500 contestants.
+
+**Filter.** Keep every node whose `user.profile.ranking` is 2,000 or better.
+
+**Fetch.** Pull live `submitStatsGlobal` totals for the 243 that remain.
+
+<p align="center">
+  <img src="assets/site-method.png" alt="Method and caveats" width="100%">
+</p>
+
+It is a sample, not a census. Users who never entered a contest are invisible, which is why the register has gaps at ranks 2, 4, 5 and elsewhere. Profile rank is solved-count rank — the separate “Global Ranking” on LeetCode is contest rating. Captured **24 November 2026**; the numbers move as LeetCode adds problems.
+
+<br>
 
 ## Files
 
-| File | What it is |
-| --- | --- |
-| `report.html` | Interactive report: chart + all 243 rows, sortable/filterable |
-| `chart.png` | 1600×1000 chart (scatter + rolling median + IQR band) |
-| `data.csv` | The raw 243-row dataset |
-| `summary-by-100.csv` | Median/min/max solved for each 100-rank band |
-| `render.py` | Regenerates the chart and HTML from `data.csv` |
+| | |
+|:--|:--|
+| [`data.csv`](data.csv) | 243 profiles · rank, username, total / easy / medium / hard, country |
+| [`summary-by-100.csv`](summary-by-100.csv) | 20 rank bands · count, median, min, max |
+| [`chart.png`](chart.png) | The 2000 × 1100 plate, ready to print or embed |
+| [`report.html`](report.html) | Self-contained report with the chart embedded |
+| [`render.py`](render.py) | Rebuilds the plate, report, social card, favicons, and `docs/` |
+| [`docs/`](docs/) | The GitHub Pages build served from `main` / `docs` |
 
-## Why this is not a ready-made leaderboard
+<br>
 
-LeetCode has **two different rankings**:
-
-1. **Profile "Rank"** — the number under your username on your profile. It is driven by problems solved.
-2. **Contest "Global Ranking"** — based on contest rating. This is what LeetCode's `/ranking/` page and the `globalRanking` GraphQL query expose.
-
-There is **no public endpoint that lists users in profile-rank order**. The profile-rank leaderboard does not exist as a page, so no repo or site can simply mirror it.
-
-The workaround used here:
-
-1. Enumerate the contest leaderboard, which *does* expose each contestant's **profile rank**:
-   ```graphql
-   query($page: Int!) {
-     globalRanking(page: $page) {
-       rankingNodes {
-         user {
-           username
-           profile { ranking }
-         }
-       }
-     }
-   }
-   ```
-2. Keep every user whose `profile.ranking` is between 1 and 2,000.
-3. Fetch their live solved totals:
-   ```graphql
-   query($username: String!) {
-     matchedUser(username: $username) {
-       profile { ranking }
-       submitStatsGlobal {
-         acSubmissionNum { difficulty count }
-       }
-     }
-   }
-   ```
-
-Pages 1–180 of the contest leaderboard were scanned (4,500 contestants), producing 243 unique users with profile rank ≤ 2,000.
-
-## Caveats
-
-- **This is a sample, not a census.** Users who have never entered a contest are invisible to this method, which is why the rank column has gaps (rank 2, 4, 5, 6, 8–12, etc. were not in the scanned contest pool). Every row is a real, live profile.
-- **The top saturates.** At 4,123 solved a user has solved the entire problem set, so ranks at the very top are ties broken by LeetCode internally. A few top users may show slightly stale solved counts.
-- **Profile rank is not a pure function of solved count.** Adjacent users with similar solved totals can straddle each other; contest rating, reputation, and the timing of solves can affect the exact position. The rolling median in the chart is the useful signal.
-- **The data moves.** LeetCode adds problems weekly/monthly. Re-scrape before citing exact numbers.
-
-## Key numbers from this snapshot
-
-| Rank | User | Solved |
-| ---: | --- | ---: |
-| 1 | `cpcs` | 4,123 |
-| 3 | `SupremeChicken` | 4,118 |
-| 7 | `reddyhemanth694` | 4,123 |
-| 20 | `Ante_` | 4,123 |
-| 103 | `skywalkert` | 3,710 |
-| 253 | `tin_le` | 3,291 |
-| 501 | `Henry_cc` | 2,969 |
-| 997 | `alex_salcianciu` | 2,540 |
-| 1,500 | `alkonaesc` | 2,287 |
-| 1,983 | `Aman_j1` | 2,131 |
-
-Band medians:
-
-| Rank band | Median solved |
-| --- | ---: |
-| 1–200 | 3,752 |
-| 201–400 | 3,229 |
-| 401–600 | 2,911 |
-| 601–800 | 2,765 |
-| 801–1,000 | 2,580 |
-| 1,001–1,200 | 2,482 |
-| 1,201–1,400 | 2,393 |
-| 1,401–1,600 | 2,281 |
-| 1,601–1,800 | 2,222 |
-| 1,801–2,000 | 2,152 |
-
-For context: **2,000 solved** sits just beyond the last sampled point (rank 1,983 = 2,131 solved), which is consistent with a rank around **2,500–2,900** as the curve flattens. The user-reported point of ~2,000 solved / rank ~2,800 falls on that tail.
-
-## Related projects that do *not* solve this
-
-- `JacobLinCool/LeetCode-Query`, `its-bismay/leetcode-stats-api`, `chandandanjo/LeetcodeScraper` — wrappers around the same GraphQL API; useful for per-user stats, but `globalRanking` is contest rating.
-- `mintutu/leetcode-country-ranking`, `chiehmin/leetcode-ranking-search` — contest-ranking tools.
-- `codolio.com` leaderboard, `clist.by` — contest-rating leaderboards.
-- `cc189.github.io/leetcode` — top users by reputation, not solved count.
-
-None of them expose a list ordered by the profile "Rank".
-
-## Regenerate
+## Run it
 
 ```bash
+python3 -m venv .venv && source .venv/bin/activate
+pip install pillow
 python3 render.py
-open report.html
+open docs/index.html
 ```
 
-## Disclaimer
+`render.py` reads `data.csv` and writes `chart.png`, `report.html`, and the complete `docs/` site. Commit `docs/` to publish.
 
-Not affiliated with LeetCode. All data is from public profile and contest-ranking fields. Usernames and solved counts are shown as-is for research/visualization; remove or correct anything on request.
+<br>
+
+<p align="center">
+  <sub>Newsreader &amp; Inter · D3 · Python / Pillow · LeetCode GraphQL<br>
+  Not affiliated with LeetCode · Data captured 24 November 2026</sub>
+</p>
+
+<p align="center">
+  <a href="https://github.com/Abhinav-Prabhakar/LeetCodeRankStudy">GitHub</a> ·
+  <a href="https://abhinav-prabhakar.github.io/LeetCodeRankStudy/">Live site</a> ·
+  <a href="data.csv">CSV</a>
+</p>
