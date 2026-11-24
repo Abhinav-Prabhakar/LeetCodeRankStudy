@@ -25,7 +25,6 @@
 <p align="center">
   <img src="https://img.shields.io/badge/python-3.x-141311?style=flat-square&labelColor=7C1F2E&logo=python&logoColor=white" alt="Python 3">
   <img src="https://img.shields.io/badge/pages-live-141311?style=flat-square&labelColor=7C1F2E&logo=githubpages&logoColor=white" alt="GitHub Pages">
-  <img src="https://img.shields.io/badge/updated-24_NOV_2026-141311?style=flat-square&labelColor=7C1F2E" alt="Updated 24 November 2026">
   <img src="https://img.shields.io/github/stars/Abhinav-Prabhakar/LeetCodeRankStudy?style=flat-square&label=stars&color=141311&labelColor=7C1F2E" alt="GitHub stars">
   <img src="https://img.shields.io/github/license/Abhinav-Prabhakar/LeetCodeRankStudy?style=flat-square&label=license&color=141311&labelColor=7C1F2E" alt="License">
 </p>
