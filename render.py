@@ -683,6 +683,7 @@ HTML = r"""<!doctype html>
     .hero { padding-top: 44px; }
     .deck { font-size: 19px; }
     .ledger .cell { padding: 18px 16px 20px 0; }
+    .rating-facts .k { font-size: 7.5px; letter-spacing: .12em; }
     .plate, .register, .reading { padding-top: 76px; }
     .section-head { align-items: flex-start; gap: 18px; }
     .metric { gap: 14px; }
@@ -848,7 +849,7 @@ HTML = r"""<!doctype html>
       <div class="rating-facts" aria-label="Contest rating summary">
         <div><span class="k">Median rating</span><span class="v">2,479</span></div>
         <div><span class="k">Rating range</span><span class="v">2,304–3,589</span></div>
-        <div><span class="k">Correlation with rank</span><span class="v">−0.11</span></div>
+        <div><span class="k">Rank correlation</span><span class="v">−0.11</span></div>
       </div>
       <p>Solving every problem and solving problems quickly are different skills. The caveat is range restriction: every profile here is already elite by volume, and all 243 carry a Guardian badge. Across LeetCode as a whole, the relationship is surely stronger.</p>
     </div>
