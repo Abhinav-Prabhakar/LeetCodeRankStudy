@@ -19,8 +19,48 @@ rows.sort(key=lambda r: r["rank"])
 N = len(rows)
 MEDIAN = int(statistics.median(r["total"] for r in rows))
 
+# optional contest ratings, joined on username
+ratings = {}
+ratings_path = os.path.join(BASE, "ratings.csv")
+if os.path.exists(ratings_path):
+    for rr in csv.DictReader(open(ratings_path)):
+        ratings[rr["username"]] = rr
+for r in rows:
+    x = ratings.get(r["username"])
+    if x:
+        r["rating"] = round(float(x["rating"]), 3)
+        r["contests"] = int(x["contests"])
+        r["contest_global_rank"] = int(x["contest_global_rank"]) if x["contest_global_rank"] else None
+        r["top_percent"] = float(x["top_percent"]) if x["top_percent"] else None
+        r["badge"] = x["badge"]
+    else:
+        r["rating"] = None
+        r["contests"] = None
+        r["contest_global_rank"] = None
+        r["top_percent"] = None
+        r["badge"] = ""
+
+RATED = [r for r in rows if r["rating"] is not None]
+RATING_MIN = min(r["rating"] for r in RATED) if RATED else None
+RATING_MAX = max(r["rating"] for r in RATED) if RATED else None
+RATING_MEDIAN = int(round(statistics.median(r["rating"] for r in RATED))) if RATED else None
+RATING_COUNT = len(RATED)
+
+def pearson(a, b):
+    ma, mb = statistics.mean(a), statistics.mean(b)
+    num = sum((x - ma) * (y - mb) for x, y in zip(a, b))
+    den = (sum((x - ma) ** 2 for x in a) * sum((y - mb) ** 2 for y in b)) ** 0.5
+    return num / den if den else 0.0
+
+RATING_R = pearson([r["rank"] for r in RATED], [r["rating"] for r in RATED]) if RATED else 0.0
+
+def published(r):
+    d = {k: r[k] for k in ("rank", "username", "total", "easy", "medium", "hard", "country", "rating", "contests")}
+    d["rating"] = int(round(r["rating"])) if r["rating"] is not None else None
+    return d
+
 data_json = json.dumps(
-    [{k: r[k] for k in ("rank", "username", "total", "easy", "medium", "hard", "country")} for r in rows],
+    [published(r) for r in rows],
     ensure_ascii=False, separators=(",", ":"),
 ).replace("</", "<\\/")
 
@@ -233,12 +273,12 @@ def build_og(path):
     d.rectangle([72 * S, 344 * S, 118 * S, 344 * S], fill=PRIMARY)
 
     d.text((72 * S, 386 * S), "243 live profiles between rank one and rank two thousand —", font=f_deck, fill=BODY, anchor="ls")
-    d.text((72 * S, 414 * S), "and the problems solved at each altitude.", font=f_deck, fill=BODY, anchor="ls")
+    d.text((72 * S, 414 * S), "the problems they have solved, the ratings they carry.", font=f_deck, fill=BODY, anchor="ls")
 
     # stats
-    stats = [("PROFILES", "243"), ("RANK RANGE", "1–1,983"), ("PROBLEMS SOLVED", "2,131–4,123")]
+    stats = [("PROFILES", "243"), ("RANK RANGE", "1–1,983"), ("SOLVED", "2,131–4,123"), ("MEDIAN RATING", "2,479")]
     x = 72 * S
-    widths = [206, 218, 240]
+    widths = [160, 180, 196, 176]
     for i, (k, v) in enumerate(stats):
         if i:
             d.line([x - 18 * S, 486 * S, x - 18 * S, 552 * S], fill=RULE, width=1 * S)
@@ -265,7 +305,7 @@ def build_og(path):
 
     # footer
     d.line([72 * S, 578 * S, (W - 72) * S, 578 * S], fill=RULE, width=1 * S)
-    tracked(d, (72 * S, 594 * S), "A STUDY IN SOLVED PROBLEMS", f_foot, PRIMARY, 1.7, "l", S)
+    tracked(d, (72 * S, 594 * S), "A STUDY IN SOLVED PROBLEMS & RATINGS", f_foot, PRIMARY, 1.7, "l", S)
     tracked(d, ((W - 72) * S, 594 * S), "LIVE GRAPHQL DATA  ·  24 NOVEMBER 2026", f_foot, MUTED, 1.7, "r", S)
 
     im = im.resize((W, H), Image.LANCZOS)
@@ -286,6 +326,7 @@ table_rows = "\n".join(
     f'<td class="rank num">{r["rank"]:,}</td>'
     f'<td class="user"><a href="https://leetcode.com/u/{esc(r["username"])}/" target="_blank" rel="noopener">{esc(r["username"])}</a></td>'
     f'<td class="num solved">{r["total"]:,}</td>'
+    f'<td class="num rating-col" title="{r["contests"]:,} contests">{int(round(r["rating"])):,}</td>'
     f'<td class="num">{r["easy"]:,}</td>'
     f'<td class="num">{r["medium"]:,}</td>'
     f'<td class="num">{r["hard"]:,}</td>'
@@ -313,6 +354,8 @@ with open(os.path.join(BASE, "summary-by-100.csv"), "w", newline="") as f:
     wr.writerows(bins)
 shutil.copyfile(os.path.join(BASE, "summary-by-100.csv"), os.path.join(DOCS, "summary-by-100.csv"))
 shutil.copyfile(os.path.join(BASE, "data.csv"), os.path.join(DOCS, "data.csv"))
+if os.path.exists(ratings_path):
+    shutil.copyfile(ratings_path, os.path.join(DOCS, "ratings.csv"))
 
 # ------------------------------------------------------------------ page
 HTML = r"""<!doctype html>
@@ -321,7 +364,7 @@ HTML = r"""<!doctype html>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>The LeetCode Rank — 243 profiles, ranks 1–1,983</title>
-<meta name="description" content="A live study of LeetCode’s global profile rank: 243 real profiles from rank 1 to 1,983, and the number of problems solved at each altitude.">
+<meta name="description" content="A live study of LeetCode’s global profile rank: 243 real profiles from rank 1 to 1,983, the problems solved at each altitude, and the contest ratings that barely track them.">
 <meta name="author" content="Abhinav Prabhakar">
 <meta name="theme-color" content="#ffffff">
 <meta name="color-scheme" content="light">
@@ -329,7 +372,7 @@ HTML = r"""<!doctype html>
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="The LeetCode Rank">
 <meta property="og:title" content="The LeetCode Rank — A study in solved problems">
-<meta property="og:description" content="243 live profiles. Ranks 1–1,983. 2,131–4,123 problems solved. A study in what it takes to reach the top of LeetCode.">
+<meta property="og:description" content="243 live profiles. Ranks 1–1,983. 2,131–4,123 problems solved. Optional contest ratings — and how little they correlate.">
 <meta property="og:url" content="@@SITE@@">
 <meta property="og:image" content="@@OGURL@@">
 <meta property="og:image:width" content="1200">
@@ -337,7 +380,7 @@ HTML = r"""<!doctype html>
 <meta property="og:image:alt" content="The LeetCode Rank — 243 profiles, ranks 1 to 1,983">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="The LeetCode Rank">
-<meta name="twitter:description" content="243 live profiles. Ranks 1–1,983. 2,131–4,123 problems solved.">
+<meta name="twitter:description" content="243 profiles. Ranks 1–1,983. Solved counts and contest ratings — two rankings that barely track each other.">
 <meta name="twitter:image" content="@@OGURL@@">
 <link rel="icon" href="@@FAVICON@@" type="image/svg+xml">
 <link rel="icon" href="@@FAVICON32@@" sizes="32x32" type="image/png">
@@ -429,6 +472,13 @@ HTML = r"""<!doctype html>
   .ledger .value small { font-size: .4em; letter-spacing: .02em; vertical-align: super; }
   .ledger .note { font-size: 13.5px; font-style: italic; line-height: 1.3; color: var(--faint); }
 
+  /* ---------------------------------------------------------------- rating facts */
+  .rating-facts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); margin: 30px 0 0; border-top: 1px solid var(--ink); border-bottom: 1px solid var(--rule); }
+  .rating-facts > div { display: flex; flex-direction: column; gap: 7px; padding: 16px 22px 18px 0; border-right: 1px solid var(--rule); }
+  .rating-facts > div:last-child { border-right: 0; padding-right: 0; }
+  .rating-facts .k { font-family: var(--sans); font-size: 8px; font-weight: 500; letter-spacing: .18em; text-transform: uppercase; color: var(--muted); }
+  .rating-facts .v { font-size: clamp(19px, 2.3vw, 29px); line-height: 1; letter-spacing: -.022em; }
+
   /* ---------------------------------------------------------------- plate */
   .plate { padding-top: 82px; }
   .section-head { display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 24px; padding-bottom: 18px; border-bottom: 1px solid var(--ink); }
@@ -465,6 +515,8 @@ HTML = r"""<!doctype html>
   .chart-actions a:hover { border-bottom-color: var(--primary); }
   .chart-actions span { color: var(--faint); }
   figcaption { margin: 16px 0 0; max-width: 760px; font-size: 14px; font-style: italic; line-height: 1.55; color: var(--muted); }
+  .rating-read { margin: 18px 0 0; padding: 2px 0 2px 16px; border-left: 1px solid var(--primary); max-width: 760px; font-size: 14.5px; line-height: 1.6; color: var(--body); }
+  .rating-read b { font-weight: 500; color: var(--ink); }
 
   /* chart tooltip */
   .chart-tip {
@@ -482,7 +534,8 @@ HTML = r"""<!doctype html>
   .tip-value em { font-size: 13px; font-style: italic; letter-spacing: 0; color: var(--muted); }
   .tip-split { margin-top: 8px; font-size: 12.5px; line-height: 1.5; color: var(--muted); }
   .tip-split b { font-weight: 500; color: var(--ink); }
-  .tip-country { font-size: 13px; font-style: italic; color: var(--muted); }
+  .tip-rating { margin-top: 4px; font-size: 12.5px; line-height: 1.5; color: var(--muted); }
+  .tip-country { margin-top: 4px; font-size: 13px; font-style: italic; color: var(--muted); }
   .tip-links { display: flex; justify-content: space-between; gap: 10px; margin-top: 13px; padding-top: 10px; border-top: 1px solid var(--rule); }
   .tip-links a { font-family: var(--sans); font-size: 7.5px; letter-spacing: .12em; text-transform: uppercase; text-decoration: none; color: var(--ink); border-bottom: 1px solid var(--rule); white-space: nowrap; }
   .tip-links a:hover { border-bottom-color: var(--primary); }
@@ -537,6 +590,14 @@ HTML = r"""<!doctype html>
   .meta #count { color: var(--faint); }
   .meta a { color: var(--ink); text-decoration: none; border-bottom: 1px solid var(--rule); padding-bottom: 2px; }
   .meta a:hover { border-bottom-color: var(--primary); }
+  .rating-toggle { appearance: none; background: none; border: 0; border-bottom: 1px solid var(--rule); padding: 0 0 2px;
+    font: inherit; letter-spacing: inherit; text-transform: inherit; color: var(--muted); cursor: pointer; }
+  .rating-toggle i { display: inline-block; width: 5px; height: 5px; margin-right: 5px; border-radius: 50%; background: var(--primary); vertical-align: 1px; opacity: .28; }
+  .rating-toggle:hover { color: var(--ink); }
+  .rating-toggle[aria-pressed="true"] { color: var(--ink); border-bottom-color: var(--primary); }
+  .rating-toggle[aria-pressed="true"] i { opacity: 1; }
+  .rating-col { display: none; }
+  .show-ratings .rating-col { display: table-cell; }
   .table-wrap { position: relative; max-height: 744px; overflow: auto; border-bottom: 1px solid var(--rule); }
   table { width: 100%; border-collapse: collapse; font-size: 15px; }
   thead th { position: sticky; top: 0; z-index: 3; background: #fff; border-bottom: 1px solid var(--ink); padding: 0; text-align: left; }
@@ -563,7 +624,7 @@ HTML = r"""<!doctype html>
   .empty span { color: var(--ink); }
 
   /* ---------------------------------------------------------------- method */
-  .method { margin-top: 112px; padding-top: 44px; border-top: 1px solid var(--rule); }
+  .method { margin-top: 112px; padding-top: 44px; padding-bottom: 18px; border-top: 1px solid var(--rule); }
   .method-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 64px; }
   .method h3 { margin: 0 0 18px; font-family: var(--sans); font-size: 9.5px; font-weight: 500; letter-spacing: .2em; text-transform: uppercase; color: var(--muted); }
   .method p, .method li { font-size: 16px; line-height: 1.62; color: #4a453e; }
@@ -641,14 +702,17 @@ HTML = r"""<!doctype html>
     tbody td { padding: 9px 6px; }
     td.user a { font-size: 15.5px; }
     td.num { font-size: 14.5px; }
-    thead th:nth-child(4), thead th:nth-child(5), thead th:nth-child(6),
-    tbody td:nth-child(4), tbody td:nth-child(5), tbody td:nth-child(6) { display: none; }
+    thead th:nth-child(5), thead th:nth-child(6), thead th:nth-child(7),
+    tbody td:nth-child(5), tbody td:nth-child(6), tbody td:nth-child(7) { display: none; }
     table { table-layout: fixed; }
     thead th:nth-child(1), tbody td:nth-child(1) { width: 15%; }
     thead th:nth-child(2), tbody td:nth-child(2) { width: 39%; }
     thead th:nth-child(3), tbody td:nth-child(3) { width: 22%; }
-    thead th:nth-child(4), tbody td:nth-child(4) { width: 24%; white-space: nowrap; }
+    thead th:nth-child(8), tbody td:nth-child(8) { width: 24%; white-space: nowrap; }
     td.country { display: table-cell; font-size: 12px; }
+    .show-ratings thead th:nth-child(2), .show-ratings tbody td:nth-child(2) { width: 37%; }
+    .show-ratings thead th:nth-child(4), .show-ratings tbody td:nth-child(4) { width: 26%; white-space: nowrap; }
+    .show-ratings td.country, .show-ratings th:nth-child(8) { display: none; }
     td.user a { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 14.5px; }
     .table-wrap { max-height: 620px; }
     .method { margin-top: 82px; }
@@ -721,6 +785,7 @@ HTML = r"""<!doctype html>
         <button type="button" data-metric="easy" aria-pressed="false">Easy</button>
         <button type="button" data-metric="medium" aria-pressed="false">Medium</button>
         <button type="button" data-metric="hard" aria-pressed="false">Hard</button>
+        <button type="button" data-metric="rating" aria-pressed="false">Rating</button>
       </div>
     </header>
 
@@ -740,7 +805,8 @@ HTML = r"""<!doctype html>
           <span>Hover to inspect · click to open</span>
         </div>
       </div>
-      <figcaption>Each dot is a real profile. The line is a rolling median; the pale band marks the 25th to 75th percentile. Switch the metric above to see how easy, medium and hard totals behave at the same ranks.</figcaption>
+      <p class="rating-read" id="rating-read" hidden><b>Contest rating</b> is the other ranking. It barely moves with profile rank here: <b>r = @@RATING_R@@</b> across @@RATING_COUNT@@ rated profiles. The highest rating in the sample belongs to No. 1,577, at 3,589.</p>
+      <figcaption>Each dot is a real profile. The line is a rolling median; the pale band marks the 25th to 75th percentile. Switch the metric above to see how easy, medium and hard totals behave at the same ranks — or to compare contest rating.</figcaption>
     </figure>
   </section>
 
@@ -778,6 +844,13 @@ HTML = r"""<!doctype html>
       <p>Rank 1 has solved all 4,123 problems. From there the bands compress: the median of the top 500 sits at 3,403 solved, the next 500 at 2,723, the next at 2,421, and the last at 2,216.</p>
       <blockquote>“At the top, the problem set runs out before the ambition does.”</blockquote>
       <p>By rank 2,000 the curve is almost flat. Between the 1,000th and 2,000th places, a thousand ranks separate users by about 500 problems. At this altitude, rank is less a measure of effort than of time and attrition — and of which problems LeetCode has added this month.</p>
+      <p>Contest rating moves on a different clock. It is nearly uncorrelated with profile rank here — <strong>Pearson r = −0.11, Spearman ρ = −0.13</strong> — and the bands barely separate: the top 500 has a median rating of 2,479, the last 500 of 2,452. The highest rating in the sample, <strong>3,589</strong>, belongs to No. 1,577; the second highest, 3,365, to No. 1,964.</p>
+      <div class="rating-facts" aria-label="Contest rating summary">
+        <div><span class="k">Median rating</span><span class="v">2,479</span></div>
+        <div><span class="k">Rating range</span><span class="v">2,304–3,589</span></div>
+        <div><span class="k">Correlation with rank</span><span class="v">−0.11</span></div>
+      </div>
+      <p>Solving every problem and solving problems quickly are different skills. The caveat is range restriction: every profile here is already elite by volume, and all 243 carry a Guardian badge. Across LeetCode as a whole, the relationship is surely stronger.</p>
     </div>
   </section>
 
@@ -797,7 +870,9 @@ HTML = r"""<!doctype html>
       </label>
       <div class="meta">
         <span id="count">243 entries</span>
+        <button id="rating-toggle" class="rating-toggle" type="button" aria-pressed="false" title="Show contest ratings in the register"><i></i>Contest ratings</button>
         <a href="data.csv" download>data.csv ↓</a>
+        <a href="ratings.csv" download>ratings.csv ↓</a>
         <a href="summary-by-100.csv" download>summary-by-100.csv ↓</a>
       </div>
     </div>
@@ -809,6 +884,7 @@ HTML = r"""<!doctype html>
             <th scope="col" class="num" aria-sort="ascending"><button type="button" data-type="num">Rank <span class="arrow">↑</span></button></th>
             <th scope="col"><button type="button" data-type="text">Profile <span class="arrow"></span></button></th>
             <th scope="col" class="num"><button type="button" data-type="num">Solved <span class="arrow"></span></button></th>
+            <th scope="col" class="num rating-col"><button type="button" data-type="num">Rating <span class="arrow"></span></button></th>
             <th scope="col" class="num"><button type="button" data-type="num">Easy <span class="arrow"></span></button></th>
             <th scope="col" class="num"><button type="button" data-type="num">Medium <span class="arrow"></span></button></th>
             <th scope="col" class="num"><button type="button" data-type="num">Hard <span class="arrow"></span></button></th>
@@ -835,13 +911,15 @@ HTML = r"""<!doctype html>
         <h3>Method</h3>
         <p>LeetCode publishes no leaderboard for the profile rank shown under a username. The only enumerable public list is the contest leaderboard, whose nodes carry each user’s profile rank.</p>
         <p>I scanned pages 1–180 of the <code>globalRanking</code> query — 4,500 contestants — kept the 243 with a profile rank of 2,000 or better, then fetched their live solved totals from <code>matchedUser.submitStatsGlobal</code>.</p>
-        <p>Captured 24 November 2026. The full pipeline lives in <code>render.py</code>; the dataset is <code>data.csv</code>.</p>
+        <p>Contest ratings come from the public <code>userContestRanking</code> query for the same 243 usernames. All 243 have a rating: median <strong>2,479</strong>, range <strong>2,304–3,589</strong>, every one a Guardian. Against profile rank, Pearson <strong>r = −0.11</strong>, Spearman <strong>ρ = −0.13</strong>.</p>
+        <p>Captured 24 November 2026. The full pipeline lives in <code>render.py</code>; the datasets are <code>data.csv</code> and <code>ratings.csv</code>.</p>
       </div>
       <div>
         <h3>Caveats</h3>
         <ul>
           <li>This is a sample, not a census. Users who never entered a contest are invisible to this method, which is why gaps appear at ranks 2, 4, 5 and elsewhere.</li>
           <li>Profile rank reflects problems solved. The separate “Global Ranking” on a LeetCode profile is contest rating; the two are not the same.</li>
+          <li>The near-zero rating correlation is partly range restriction: every profile here is already in the top 2,000 by solved count, and all 243 carry a Guardian badge. Across LeetCode as a whole, the relationship is surely stronger.</li>
           <li>At the top, solved counts saturate at 4,123 — the full problem set — so ties are effectively arbitrary.</li>
           <li>The data moves as LeetCode adds problems. Every figure here is a snapshot.</li>
         </ul>
@@ -908,6 +986,16 @@ HTML = r"""<!doctype html>
 
   q.addEventListener('input', apply);
 
+  var ratingToggle = document.getElementById('rating-toggle');
+  var register = document.getElementById('register');
+  if (ratingToggle && register) {
+    ratingToggle.addEventListener('click', function () {
+      var on = this.getAttribute('aria-pressed') !== 'true';
+      this.setAttribute('aria-pressed', on ? 'true' : 'false');
+      register.classList.toggle('show-ratings', on);
+    });
+  }
+
   var headers = [].slice.call(table.querySelectorAll('th'));
   headers.forEach(function (th) {
     var btn = th.querySelector('button');
@@ -965,7 +1053,8 @@ HTML = r"""<!doctype html>
     total:  { label: 'Solved', unit: 'PROBLEMS SOLVED', domain: [2000, 4200], ticks: [2000, 2400, 2800, 3200, 3600, 4000] },
     easy:   { label: 'Easy',   unit: 'EASY SOLVED',     domain: [150, 1000],  ticks: [200, 400, 600, 800, 1000] },
     medium: { label: 'Medium', unit: 'MEDIUM SOLVED',   domain: [950, 2200],  ticks: [1000, 1200, 1400, 1600, 1800, 2000, 2200] },
-    hard:   { label: 'Hard',   unit: 'HARD SOLVED',     domain: [150, 1050],  ticks: [200, 400, 600, 800, 1000] }
+    hard:   { label: 'Hard',   unit: 'HARD SOLVED',     domain: [150, 1050],  ticks: [200, 400, 600, 800, 1000] },
+    rating: { label: 'Rating', unit: 'CONTEST RATING',  domain: [2250, 3650], ticks: [2400, 2800, 3200, 3600] }
   };
   var metric = 'total';
   var width, height, mobile, m, x, y;
@@ -1008,7 +1097,7 @@ HTML = r"""<!doctype html>
       .attr('width', width)
       .attr('height', height)
       .attr('role', 'img')
-      .attr('aria-label', 'Scatter plot of LeetCode global profile rank versus problems solved');
+      .attr('aria-label', 'Scatter plot of LeetCode global profile rank versus problems solved or contest rating');
 
     x = d3.scaleLinear().domain([0, 2000]).range([m.left, width - m.right]);
     y = d3.scaleLinear().domain(METRICS[metric].domain).range([height - m.bottom, m.top]);
@@ -1061,7 +1150,9 @@ HTML = r"""<!doctype html>
     annGroups.append('line').attr('stroke', '#b7afa3').attr('stroke-width', .8).attr('opacity', .75);
     annGroups.append('circle').attr('r', 4.6).attr('fill', 'none').attr('stroke', PRIMARY).attr('stroke-width', 1);
     annGroups.append('text').attr('font-family', 'var(--serif)').attr('font-style', 'italic')
-      .attr('font-size', mobile ? 10.5 : 12).attr('fill', INK);
+      .attr('font-size', mobile ? 10.5 : 12).attr('fill', INK)
+      .attr('paint-order', 'stroke').attr('stroke', '#fff')
+      .attr('stroke-width', mobile ? 3.4 : 4.2).attr('stroke-linejoin', 'round');
 
     var hover = svg.append('g').attr('pointer-events', 'none');
     guide = hover.append('line').attr('y1', m.top).attr('y2', height - m.bottom)
@@ -1096,6 +1187,8 @@ HTML = r"""<!doctype html>
     var t = svg.transition().duration(dur).ease(d3.easeCubicOut);
 
     svg.select('.js-unit').text(cfg.unit);
+    var ratingRead = document.getElementById('rating-read');
+    if (ratingRead) ratingRead.hidden = metric !== 'rating';
 
     gGrid.selectAll('line').data(cfg.ticks, function (d) { return d; }).join('line')
       .attr('x1', m.left).attr('x2', width - m.right)
@@ -1167,11 +1260,18 @@ HTML = r"""<!doctype html>
       return (k === metric ? '<b>' : '') + fmt(d[k]) + ' ' + k + (k === metric ? '</b>' : '');
     }).join(' · ');
 
+    var primary = metric === 'rating'
+      ? fmt(d.rating) + ' <em>contest rating</em>'
+      : fmt(d.total) + ' <em>solved</em>';
+    var ratingMeta = metric === 'rating'
+      ? fmt(d.total) + ' solved · ' + fmt(d.contests) + ' contests'
+      : 'Contest rating ' + fmt(d.rating) + ' · ' + fmt(d.contests) + ' contests';
     tip.innerHTML =
       '<div class="tip-top"><span>No. ' + fmt(d.rank) + '</span><span>global profile rank</span></div>' +
       '<div class="tip-name">' + esc(d.username) + '</div>' +
-      '<div class="tip-value">' + fmt(d.total) + ' <em>solved</em></div>' +
+      '<div class="tip-value">' + primary + '</div>' +
       '<div class="tip-split">' + split + '</div>' +
+      '<div class="tip-rating">' + ratingMeta + '</div>' +
       '<div class="tip-country">' + esc(d.country || '—') + '</div>' +
       '<div class="tip-links"><a href="https://leetcode.com/u/' + encodeURIComponent(d.username) + '/" target="_blank" rel="noopener">Profile ↗</a><a href="#" data-locate="' + esc(d.username) + '">Find in register</a></div>';
 
@@ -1310,6 +1410,8 @@ def page(docs=False):
         .replace("@@SITE@@", SITE)
         .replace("@@REPO@@", REPO)
         .replace("@@OGURL@@", SITE + "og.png")
+        .replace("@@RATING_R@@", f"{RATING_R:.2f}".replace("-", "−"))
+        .replace("@@RATING_COUNT@@", str(RATING_COUNT))
         .replace("@@FAVICON@@", "favicon.svg" if docs else "assets/favicon.svg")
         .replace("@@FAVICON32@@", "favicon-32.png" if docs else "assets/favicon-32.png")
         .replace("@@APPLE@@", "favicon-180.png" if docs else "assets/favicon-180.png")
@@ -1348,7 +1450,7 @@ open(os.path.join(DOCS, "sitemap.xml"), "w").write(
 open(os.path.join(DOCS, "site.webmanifest"), "w").write(json.dumps({
     "name": "The LeetCode Rank",
     "short_name": "LeetCode Rank",
-    "description": "A live study of LeetCode global profile rank versus problems solved.",
+    "description": "A live study of LeetCode global profile rank versus problems solved, with optional contest ratings.",
     "start_url": "/LeetCodeRankStudy/",
     "scope": "/LeetCodeRankStudy/",
     "display": "standalone",
@@ -1364,9 +1466,9 @@ open(os.path.join(DOCS, "site.webmanifest"), "w").write(json.dumps({
 schema = {
     "@context": "https://schema.org",
     "@type": "Dataset",
-    "name": "LeetCode global profile rank vs. problems solved",
+    "name": "LeetCode global profile rank vs. problems solved, with contest ratings",
     "alternateName": "The LeetCode Rank",
-    "description": "243 live LeetCode profiles between global profile rank 1 and 1,983, with total, easy, medium and hard problem counts.",
+    "description": "243 live LeetCode profiles between global profile rank 1 and 1,983, with total, easy, medium and hard problem counts and optional contest ratings.",
     "url": SITE,
     "creator": {
         "@type": "Person",
@@ -1381,11 +1483,16 @@ schema = {
     "variableMeasured": [
         {"@type": "PropertyValue", "name": "Global profile rank", "unitText": "rank"},
         {"@type": "PropertyValue", "name": "Problems solved", "unitText": "problems"},
+        {"@type": "PropertyValue", "name": "Contest rating", "unitText": "rating"},
     ],
     "distribution": [{
         "@type": "DataDownload",
         "encodingFormat": "text/csv",
         "contentUrl": SITE + "data.csv",
+    }, {
+        "@type": "DataDownload",
+        "encodingFormat": "text/csv",
+        "contentUrl": SITE + "ratings.csv",
     }],
 }
 schema_json = json.dumps(schema, indent=2, ensure_ascii=False).replace("</", "<\\/")
